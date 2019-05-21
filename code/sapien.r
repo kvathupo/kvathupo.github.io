@@ -248,120 +248,221 @@ df_govt <- df_govt %>%
 
 # Calculate the return and excess return for each asset, 
 # including the market portfolio
-df_aapl <- df_aapl %>%
-  mutate(r=change/lag(close, 1)) %>%
-  mutate(r_excess = r-df_govt$r)
+get_returns <- function(df) {
+  df <- df %>%
+    mutate(r=change/lag(close, 1)) %>%
+    mutate(r_excess = r-df_govt$r)
+  
+}
 
-df_cone <- df_cone %>%
-  mutate(r=change/lag(close, 1)) %>%
-  mutate(r_excess = r-df_govt$r)
-
-df_fb <- df_fb %>%
-  mutate(r=change/lag(close, 1)) %>%
-  mutate(r_excess = r-df_govt$r)
-
-df_goog <- df_goog %>%
-  mutate(r=change/lag(close, 1)) %>%
-  mutate(r_excess = r-df_govt$r)
-
-df_vz <- df_vz %>%
-  mutate(r=change/lag(close, 1)) %>%
-  mutate(r_excess = r-df_govt$r)
+df_aapl <- get_returns(df_aapl)
+df_cone <- get_returns(df_cone)
+df_fb <- get_returns(df_fb)
+df_goog <- get_returns(df_goog)
+df_vz <- get_returns(df_vz)
 
 df_market <- df_market %>%
   mutate(r_excess_market = r_market-df_govt$r)
 
 # Calculate residual return and its standard deviation for each stock
 
-df_aapl <- df_aapl %>%
-  right_join(df_market, by="date") %>%
-  select(-r_market)
-# Run the regression for the beta
-aapl_fit <- lm(r_excess~r_excess_market, 
-               filter(df_aapl, date<"2017-01-03"))
-# Fit residual return
-beta <- ((broom::tidy(aapl_fit))["estimate"])[[1, 1]]
-df_aapl <- df_aapl %>%
-  mutate(r_resid=r_excess-(beta*r_excess_market)) %>%
-  select(-r_excess_market)
+get_vlvr <- function(df) {
+  df <- df %>%
+    right_join(df_market, by="date") %>%
+    select(-r_market)
+  # Run the regression for the beta
+  df_fit <- lm(r_excess~r_excess_market, 
+               filter(df, date<"2017-01-03"))
+  # Fit residual return
+  beta <- ((broom::tidy(df_fit))["estimate"])[[1, 1]]
+  df <- df %>%
+    mutate(r_resid=r_excess-(beta*r_excess_market)) %>%
+    select(-r_excess_market)
 
-# Calculate annual standard deviation of residual returns
-# Calculate rolling annual volume and monthly close
-#   Note that we use a window of 252+1
-ta <- df_aapl %>%
-  mutate(r_resid_sd=roll_sdr(r_resid, n=253, fill=NA)) %>%
-  mutate(VLVR=log10((roll_sumr(vol, 21)*lag(close, 21)+
-                 roll_sumr(lag(vol, 21), 21)*lag(close, 21*2)+
-                 roll_sumr(lag(vol, 21*2), 21)*lag(close, 21*3)+
-                 roll_sumr(lag(vol, 21*3), 21)*lag(close, 21*4)+
-                 roll_sumr(lag(vol, 21*4), 21)*lag(close, 21*5)+
-                 roll_sumr(lag(vol, 21*5), 21)*lag(close, 21*6)+
-                 roll_sumr(lag(vol, 21*6), 21)*lag(close, 21*7)+
-                 roll_sumr(lag(vol, 21*7), 21)*lag(close, 21*8)+
-                 roll_sumr(lag(vol, 21*8), 21)*lag(close, 21*9)+
-                 roll_sumr(lag(vol, 21*9), 21)*lag(close, 21*10)+
-                 roll_sumr(lag(vol, 21*10), 21)*lag(close, 21*11)+
-                 roll_sumr(lag(vol, 21*11), 21)*lag(close, 21*12))/r_resid_sd))
-  
-  
- # mutate(vol_a=roll_sumr(vol, n=253))
+  # Calculate annual standard deviation of residual returns
+  # Calculate rolling annual volume and monthly close
+  #   Note that we use a window of 252+1
+  # Calculate VLVR
+  df <- df %>%
+    mutate(r_resid_sd=roll_sdr(r_resid, n=253, fill=NA)) %>%
+    mutate(VLVR=log10((roll_sumr(vol, 21)*lag(close, 21)+
+                   roll_sumr(lag(vol, 21), 21)*lag(close, 21*2)+
+                   roll_sumr(lag(vol, 21*2), 21)*lag(close, 21*3)+
+                   roll_sumr(lag(vol, 21*3), 21)*lag(close, 21*4)+
+                   roll_sumr(lag(vol, 21*4), 21)*lag(close, 21*5)+
+                   roll_sumr(lag(vol, 21*5), 21)*lag(close, 21*6)+
+                   roll_sumr(lag(vol, 21*6), 21)*lag(close, 21*7)+
+                   roll_sumr(lag(vol, 21*7), 21)*lag(close, 21*8)+
+                   roll_sumr(lag(vol, 21*8), 21)*lag(close, 21*9)+
+                   roll_sumr(lag(vol, 21*9), 21)*lag(close, 21*10)+
+                   roll_sumr(lag(vol, 21*10), 21)*lag(close, 21*11)+
+                   roll_sumr(lag(vol, 21*11), 21)*lag(close, 21*12))/r_resid_sd)) %>%
+    select(-r_resid, -r_resid_sd)
+}
+
+df_aapl <- get_vlvr(df_aapl)
+df_cone <- get_vlvr(df_cone)
+df_fb <- get_vlvr(df_fb)
+df_goog <- get_vlvr(df_goog)
+df_vz <- get_vlvr(df_vz)
 
 
+get_hilo <- function(df) {
+  # Calculate HILO factor
 
+    # Calculate lowest and highest price for past trading month for every
+    # trading day
 
+  df$m_high <- df %>%
+    select(high) %>%
+    rollmax(k = 22, na.pad = TRUE, align = "right")
 
-
-
-
-
-# Calculate HILO factor
-
-  # Calculate lowest and highest price for past trading month for every
-# trading day
-
-df_aapl$m_high <- df_aapl %>%
-  select(high) %>%
-  rollmax(k = 22, na.pad = TRUE, align = "right")
-
-df_aapl$m_low <- df_aapl %>%
-  select(low) %>%
-  mutate(low=-low) %>%
-  rollmax(k = 22, na.pad = TRUE, align = "right") * -1
+  df$m_low <- df %>%
+    select(low) %>%
+    mutate(low=-low) %>%
+    rollmax(k = 22, na.pad = TRUE, align = "right") * -1
   
   # Calculate the HILO
-df_aapl <- df_aapl %>%
-  mutate(hilo = log10(m_high/m_low)) %>%
-  select(c(1, 2, 4, 5, 6, 7, 8, 11))
-
-# Calculate RSTR factor
-
-y_sum <- vector()
-d_change <- vector()
-d_change_rf <- vector()
-prev_close <- vector()
-prev_close_rf <- vector()
-d_ret <- vector()
-d_ret_rf <- vector()
-m_ret <- vector()
-m_ret_rf <- vector()
-rstr <- vector()
-# Note that 12*21 = 252
-for (i in seq(1, nrow(df_aapl)-252-1)) {
-  # Calculate daily returns for the past year
-  d_change <- select(slice(df_aapl, (i+1):(i+252+1)), change)
-  d_change_rf <- select(slice(df_govt, (i+1):(i+252+1)), change)
-  prev_close <- select(slice(df_aapl, i:(i+252)), close)
-  prev_close_rf <- select(slice(df_govt, i:(i+252)), close)
-  d_ret <- d_change/prev_close
-  d_ret_rf <- d_change_rf/prev_close_rf
-  # Divide the year into 12 months and calculate the total return for each 
-  # month
-  for (j in seq(0, 11)) {
-    m_ret[(j+1)] <- log10( 1+ sum(slice(d_ret, 
-                                        (j*21 + 1):(j*21 + 1 + 21))))
-    m_ret_rf[(j+1)] <- log10( 1+ sum(slice(d_ret_rf, 
-                                           (j*21 + 1):(j*21 + 1 + 21))))
-  }
-  rstr[i+252+1] <- sum(m_ret) - sum(m_ret_rf)
+  df <- df %>%
+    mutate(HILO = log10(m_high/m_low)) %>%
+    select(-m_high, -m_low)
 }
-df_aapl$rstr <- rstr
+
+df_aapl <- get_hilo(df_aapl)
+df_cone <- get_hilo(df_cone)
+df_fb <- get_hilo(df_fb)
+df_goog <- get_hilo(df_goog)
+df_vz <- get_hilo(df_vz)
+
+# Calculate RSTR
+
+get_rstr <- function(df) {
+  df <- df %>%
+     mutate(RSTR_l=
+           log10(1+(roll_sumr(change, 21)/lag(close, 21)))+
+           log10(1+(roll_sumr(lag(change, 21), 21)/lag(close, 21*2)))+
+           log10(1+(roll_sumr(lag(change, 21), 21*2)/lag(close, 21*3)))+
+           log10(1+(roll_sumr(lag(change, 21), 21*3)/lag(close, 21*4)))+
+           log10(1+(roll_sumr(lag(change, 21), 21*4)/lag(close, 21*5)))+
+           log10(1+(roll_sumr(lag(change, 21), 21*5)/lag(close, 21*6)))+
+           log10(1+(roll_sumr(lag(change, 21), 21*6)/lag(close, 21*7)))+
+           log10(1+(roll_sumr(lag(change, 21), 21*7)/lag(close, 21*8)))+
+           log10(1+(roll_sumr(lag(change, 21), 21*8)/lag(close, 21*9)))+
+           log10(1+(roll_sumr(lag(change, 21), 21*9)/lag(close, 21*10)))+
+           log10(1+(roll_sumr(lag(change, 21), 21*10)/lag(close, 21*11)))+
+           log10(1+(roll_sumr(lag(change, 21), 21*11)/lag(close, 21*12)))) %>%
+      mutate(RSTR_r=
+           log10(1+(roll_sumr(df_govt$change, 21)/lag(df_govt$close, 21)))+
+           log10(1+(roll_sumr(lag(df_govt$change, 21), 21)/lag(df_govt$close, 21*2)))+
+           log10(1+(roll_sumr(lag(df_govt$change, 21), 21*2)/lag(df_govt$close, 21*3)))+
+           log10(1+(roll_sumr(lag(df_govt$change, 21), 21*3)/lag(df_govt$close, 21*4)))+
+           log10(1+(roll_sumr(lag(df_govt$change, 21), 21*4)/lag(df_govt$close, 21*5)))+
+           log10(1+(roll_sumr(lag(df_govt$change, 21), 21*5)/lag(df_govt$close, 21*6)))+
+           log10(1+(roll_sumr(lag(df_govt$change, 21), 21*6)/lag(df_govt$close, 21*7)))+
+           log10(1+(roll_sumr(lag(df_govt$change, 21), 21*7)/lag(df_govt$close, 21*8)))+
+           log10(1+(roll_sumr(lag(df_govt$change, 21), 21*8)/lag(df_govt$close, 21*9)))+
+           log10(1+(roll_sumr(lag(df_govt$change, 21), 21*9)/lag(df_govt$close, 21*10)))+
+           log10(1+(roll_sumr(lag(df_govt$change, 21), 21*10)/lag(df_govt$close, 21*11)))+
+           log10(1+(roll_sumr(lag(df_govt$change, 21), 21*11)/lag(df_govt$close, 21*12)))) %>%
+      mutate(RSTR=RSTR_l-RSTR_r) %>%
+      select(-RSTR_l, -RSTR_r) 
+}
+
+df_aapl <- get_rstr(df_aapl)
+df_cone <- get_rstr(df_cone)
+df_fb <- get_rstr(df_fb)
+df_goog <- get_rstr(df_goog)
+df_vz <- get_rstr(df_vz)
+
+
+# Calculate LNCAP
+get_lncap <- function(df) {
+  df <- df %>%
+    mutate(LNCAP=log10(outS*lag(close, 1)))
+}
+
+df_aapl <- get_lncap(df_aapl)
+df_cone <- get_lncap(df_cone)
+df_fb <- get_lncap(df_fb)
+df_goog <- get_lncap(df_goog)
+df_vz <- get_lncap(df_vz)
+
+# Calculate LCAPCB
+get_lcapcb <- function(df) {
+  df <- df %>%
+    mutate(LCAPCB=(log10(outS*lag(close, 1)))^(1/3))
+}
+
+df_aapl <- get_lcapcb(df_aapl)
+df_cone <- get_lcapcb(df_cone)
+df_fb <- get_lcapcb(df_fb)
+df_goog <- get_lcapcb(df_goog)
+df_vz <- get_lcapcb(df_vz)
+
+# Calculate BTOP
+get_btop <- function(df) {
+  df <- df %>%
+    mutate(BTOP=book/(outS*lag(close, 1)))
+}
+
+df_aapl <- get_btop(df_aapl)
+df_cone <- get_btop(df_cone)
+df_fb <- get_btop(df_fb)
+df_goog <- get_btop(df_goog)
+df_vz <- get_btop(df_vz)
+
+# Approximate Risk-free rate for the day
+
+r_f <- mean((filter(df_govt, date<"2017-01-03"))$r, na.rm=TRUE)
+
+# Trim data and make amenable to regression (get residual factor values)
+trim_dat <- function(df) {
+  df <- df %>%
+    filter(!is.na(VLVR)) %>%
+    mutate(VLVR=VLVR-r_f,
+           HILO=HILO-r_f,
+           RSTR=RSTR-r_f,
+           LNCAP=LNCAP-r_f,
+           LCAPCB=LCAPCB-r_f,
+           BTOP=BTOP-r_f)
+}
+
+df_aapl <- trim_dat(df_aapl)
+df_cone <- trim_dat(df_cone)
+df_fb <- trim_dat(df_fb)
+df_goog <- trim_dat(df_goog)
+df_vz <- trim_dat(df_vz)
+
+# Create our training and test sets
+
+train_aapl <- filter(df_aapl, date<"2017-01-03")
+test_aapl <- filter(df_aapl, date>="2017-01-03")
+
+train_cone <- filter(df_cone, date<"2017-01-03")
+test_cone <- filter(df_cone, date>="2017-01-03")
+
+train_fb <- filter(df_fb, date<"2017-01-03")
+test_fb <- filter(df_fb, date>="2017-01-03")
+
+train_goog <- filter(df_goog, date<"2017-01-03")
+test_goog <- filter(df_goog, date>="2017-01-03")
+
+train_vz <- filter(df_vz, date<"2017-01-03")
+test_vz <- filter(df_vz, date>="2017-01-03")
+
+# Fit the results of our regression on the training data onto
+# the test dataset
+fit_dat <- function(df) {
+  md <- broom::tidy(lm(r~VLVR+HILO+RSTR+LNCAP+LCAPCB+BTOP, data=train_fb))
+  df$r_pred <- md[[1,2]]+md[[2,2]]*df$VLVR+
+    md[[3,2]]*df$HILO+md[[4,2]]*df$RSTR+
+    md[[5,2]]*df$LNCAP+md[[6,2]]*df$LCAPCB+
+    md[[7,2]]*df$BTOP
+  df
+}
+
+test_aapl <- fit_dat(test_aapl)
+test_cone <- fit_dat(test_cone)
+test_fb <- fit_dat(test_fb)
+test_goog <- fit_dat(test_goog)
+test_vz <- fit_dat(test_vz)
