@@ -466,3 +466,50 @@ test_cone <- fit_dat(test_cone)
 test_fb <- fit_dat(test_fb)
 test_goog <- fit_dat(test_goog)
 test_vz <- fit_dat(test_vz)
+
+
+# Remove extraneous variables
+rm(train_aapl, train_cone, train_fb, train_goog, train_vz,
+   df_aapl, df_cone, df_fb, df_goog, df_govt, df_vz)
+
+# Prune data
+test_aapl <- test_aapl %>%
+  select(date, "aapl_c"=close, "aapl_r"=r, "aapl_p"=r_pred)
+test_cone <- test_cone %>%
+  select(date, "cone_c"=close, "cone_r"=r, "cone_p"=r_pred)
+test_fb <- test_fb %>%
+  select(date, "fb_c"=close, "fb_r"=r, "fb_p"=r_pred)
+test_goog <- test_goog %>%
+  select(date, "goog_c"=close, "goog_r"=r, "goog_p"=r_pred)
+test_vz <- test_vz %>%
+  select(date, "vz_c"=close, "vz_r"=r, "vz_p"=r_pred)
+
+# Create portfolio
+pfolio <- test_aapl %>%
+  right_join(test_cone, by="date") %>%
+  right_join(test_fb, by="date") %>%
+  right_join(test_goog, by="date") %>%
+  right_join(test_vz, by="date") %>%
+  slice(seq(1, nrow(test_cone), by=5))
+
+pfolio$val <- NA
+pfolio$val[1] <- 1000000
+for (i in seq(1, nrow(pfolio)-1)) {
+  max_pred=max(pfolio[[i,4]],
+               pfolio[[i,7]],
+               pfolio[[i,10]],
+               pfolio[[i,13]],
+               pfolio[[i,16]])
+  # AAPL is the max prediction
+  if (max_pred==pfolio[[i,4]]) {
+    pfolio$val[i+1]=(pfolio$val[i]/pfolio[[i,2]])*pfolio[[i+1,2]]
+  } else if (max_pred==pfolio[[i,7]]) {
+    pfolio$val[i+1]=(pfolio$val[i]/pfolio[[i,5]])*pfolio[[i+1,5]]
+  } else if (max_pred==pfolio[[i,10]]) {
+    pfolio$val[i+1]=(pfolio$val[i]/pfolio[[i,8]])*pfolio[[i+1,8]]
+  } else if (max_pred==pfolio[[i,13]]) {
+    pfolio$val[i+1]=(pfolio$val[i]/pfolio[[i,11]])*pfolio[[i+1,11]]
+  } else if (max_pred==pfolio[[i,16]]) {
+    pfolio$val[i+1]=(pfolio$val[i]/pfolio[[i,14]])*pfolio[[i+1,14]]
+  }
+}
