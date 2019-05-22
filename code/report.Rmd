@@ -3,8 +3,8 @@ title: "Can Monkeys Beat Humans in the Stock Market?"
 author: "Jason Gill, Kalinda Vathupola"
 date: "May 22, 2019"
 abstract: "In this project, we compare the performance of two portfolios, \\
-  both with an initial capital of $1,000,000: one is managed by monkeys \\
-  whereas the other is managed by humans. The former portfolio is constructed \\
+  both with an initial capital of $1,000,000: one is managed by monkeys, \\
+  the other by humans. The former portfolio is constructed \\
   by randomized stock picks. The latter portfolio is constructed using a \\
   multi-factor valuation model adhering to Arbitrage Pricing Theory with \\
   a basic allocation model. Performance is assessed in terms of portfolio \\
@@ -58,7 +58,17 @@ content: "Theorem (" attr(text) ") ";
 
 </style>
 
-## Introduction
+# Legal
+
+Data provided for free by [IEX](https://iextrading.com/developer/). View
+[IEX's Terms of Use](https://iextrading.com/api-exhibit-a/).
+
+Note that this service will be deprecated on June 1, 2019. To use a similar
+service, see [IEX Cloud](https://iexcloud.io). Furthermore, consult 
+its [terms of service](https://iexcloud.io/terms/).
+
+
+# Introduction
 
 The objective of this tutorial is to provide a motivated project as an example 
 of using R in a realistic application.  This project seeks to answer a simple 
@@ -70,15 +80,15 @@ market a game of skill or luck? Let's find out!
 financial terms used in this project.
 </p>
 
-### Hypothesis
+## Hypothesis
 
 Our hypothesis is:
 
-<center>
+<p class="note" align="center">
   Humans outperform monkeys in portfolio management.
-</center>
+</p>
 
-### Experimental Significance
+## Experimental Significance
 
 At first glance, our experiment appears to be nothing more than an attempt
 to answer a juvenile curiosity of little practical importance. Its actual 
@@ -86,8 +96,8 @@ implications, however, are quite significant.
 
 The actual question is: does the application of quantitative financial theory 
 improve the ability of portfolio managers to gain superior returns? If humans
-succeed over the monkeys, the answer is an affirmative one. The "monkey" 
-potrfolio is merely a proxy for a randomly constructed one. The specific
+succeed over the monkeys, the answer is affirmative. The "monkey" 
+portfolio is merely a proxy for a randomly constructed one. The specific
 financial theory to be tested is Arbitrage Pricing Theory, which makes use
 of multilinear regression to predict equity returns.
 
@@ -98,20 +108,41 @@ funds, will be able to increase economic efficiency by supplanting the work
 of many financial analysts with a few data scientists, thereby increasing
 employee and client returns. From a data-science standpoint, financial models 
 returns can have their fundamental theory applied to other cases concerning stochastic forecasting, such as fluid dynamics, tumor growth etc. Indeed, 
-physical [models of Brownian motion]
-(https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process#Application_in_financial_mathematics) have found use in finance.
+physical [models of Brownian motion](https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process#Application_in_financial_mathematics) have found use in finance.
 
-### Experimental Procedure
+## Experimental Procedure
 
 This experiment is divided into three stages, which will be presented
 sequentially:
+
   1. The construction of the monkey portfolio
-  2. The construction of the human potrfolio
+     + Initial capital of 1,000,000 dollars
+     + Each trading week, select a stock. Buy as many shares of this stock as 
+     possible. At week's end, sell all shares and repeat this process for 
+     another, randomly chosen stock.
+     + Test Period: Jan. 2017 to May 2019
+     
+  2. The construction of the human portfolio
+     + Initial capital of 1,000,000 dollars
+     + Each trading week, select the stock with the highest expected return, 
+     as determined by our regression model. Buy as many shares of this stock as
+     possible. At week's end, sell all shares and repeat this process for 
+     another stock.
+     + Training Period: May 2014 to Jan. 2017
+     + Test Period: Jan. 2017 to May 2019
+     
   3. Assessment of portfolio performance
-As stated previously, the "monkey" portoflio is merely a proxy term for 
+
+<p class="note" align="center">
+  **Note**: A trading week is not 7 days (traders need weekends off too)! 
+  A trading week is typically 5 days. We extrapolate the number of trading
+  days in a month and year similarly from average metrics.
+</p>
+
+As stated previously, the "monkey" portfolio is merely a proxy term for 
 a randomly-constructed portfolio devoid of financial theory. The human
-portoflio applies Arbitrage Pricing Theory to model daily stock returns as 
-a multilinear regression moedl. 
+portfolio applies Arbitrage Pricing Theory to model daily stock returns as 
+a multilinear regression model. 
 
 Though there exist many metrics for assessing portfolio performance, we use
 total portfolio value for simplicity of computation and brevity of explanation.
@@ -290,10 +321,12 @@ df$portfolio_val[1] <- 1000000 #start off with $1,000,000
 ```
 
 We are ready for the monkeys to make their stock picks.  The monkeys will 
-operate in the following fassion: 
+operate in the following fashion: 
+
   1. Pick a stock out of the 6 options at random to buy
   2. Buy as many of that stock as they can afford with what is in the portfolio
   3. Sell them next week and do the same thing for a newly chosen stock 
+  
 Here is that process in action:
 
 ```{r exp_monkey3}
@@ -323,6 +356,13 @@ for(i in 2:nrow(df)){
 We now have our monkey stock performance.  We can calculate how well the monkeys did but looking at their net portfolio change for each week, and plot this over 
 time to get an overall sense of their performance. 
 
+<p class="note" align="center">
+  **Note**: This data is dynamically generated from our JSON call. Thus, it is
+  execution dependent. Recall that we recorded the performance of our monkey
+  portfolio in a single run by CSV file in order to allow stable comparison
+  with our human portfolio.
+</p>
+
 ```{r exp_monkey4}
 monkey_df <- df %>%
   select(date, portfolio_val) %>%
@@ -338,6 +378,10 @@ monkey_df %>%
 ```
 
 Let's write this data to a file and hold onto it for now. 
+<p class="note" align="center">
+  **Note**: In practice, this was done once so as to minimize the tutorial's
+  dependence on the time of JSON call.
+</p>
 
 ```{r exp_monkey5, eval=FALSE}
 write_csv(monkey_df, "monkey_df.csv")
@@ -374,8 +418,7 @@ being applied. Much of this material is adapted from the following, wonderful te
 
   [Fabozzi, Frank J., et al. Financial Modeling of the Equity Market: from CAPM to Cointegration. Wiley, 2006.](https://onlinelibrary.wiley.com/doi/book/10.1002/9781119201236)
   
-For the sake of brevity, we provide a high-level overview. For more detail, 
-consult **Appendix C**. If this is still not sufficient, consult the textbook
+For the sake of brevity, we provide a high-level overview. If this is still not sufficient, consult the textbook
 above.
 
 Fundamentally, we wish to train a regression model on training data. This model
@@ -403,13 +446,13 @@ rate of return, the risk-free rate $R_f$. Conversely, the return of a risky
 asset is variable. 
 
 Of course, no asset is truly riskless. Thus, portfolio managers supplant a 
-risk-free asset with one with little risk, such as 10 year U.S. Treasury notes
+risk-free asset with one of little risk, such as 10 year U.S. Treasury notes
 (T-Bill).
 
 In our human portfolio, we take the iShares Core U.S. Treasury Bond ETF as the
 riskless asset. Unlike T-Bills, we need not wait until maturation to realize our
 return, thereby allowing us to define the risk-free rate for shorter 
-time-intervals. 
+time-intervals, namely our weekly holding period. 
 
 Risk belongs to one of two categories:
 
@@ -420,7 +463,7 @@ Risk is said to be diversifiable if the strategic allocation of a portfolio
 into certain financial instruments can lower the level of risk. Thus, 
 systematic risk can be viewed as risk inherent to the market that cannot be
 eliminated. Unsystematic risk can be viewed as risk inherent to specific 
-assets that can be lowered by adjusting our portfolio's exposure to the asset.
+assets that can be lowered by adjusting our portfolio's exposure to said asset.
 
 Arbitrage Pricing Theory (APT) assumes the following Theorem:
 
@@ -434,13 +477,13 @@ by the market. Thus, risky asset cannot be rendered risk-less.
 Furthermore, ABT assumes that investors are compensated with superior returns, 
 defined as returns in excess of the risk-free rate, for taking risk that
 cannot be diversified away: systematic risk. Otherwise, were investors
-cmopensated for risk that can be diversified, we would have arbitrage.
+compensated for risk that can be diversified, we would have arbitrage.
 
 Let's return to our model to bring everything together
 
 ### Returning to Our Model
 
-Recall that model:
+Recall the model:
 $$
 E(R_i) = R_f + \sum_{k=1}^N \beta_{ik} \big( E(F_k) - R_f \big) + \varepsilon,
 $$
@@ -486,7 +529,7 @@ $$
 RSTR=\sum_{i=1}^{12} \log \left( 1 + r_i \right) - \sum_{i=1}^{12} \log \left( 1 + (r_{f})_i \right)
 $$
 where $r_i$ is the return of the asset in the $i$th month. Similarly, 
-$(r_{f})_i$ is the reutrn of the risk-less asset in the $i$th month.
+$(r_{f})_i$ is the return of the risk-less asset in the $i$th month.
 
 ##### Size
 
@@ -561,7 +604,7 @@ of execution. Furthermore, the free IEX API will be deprecated on June 1,
 2019. See **Appendix A** for the code. </p>
 
 ```{r read_close}
-# Read price data from CSV files
+# Read AAPL data
 df_aapl <- read_csv("./data/aapl.csv", col_names=
                       c("date", 
                         "aapl_close", 
@@ -575,8 +618,7 @@ df_aapl <- read_csv("./data/aapl.csv", col_names=
                            col_double(),
                            col_double(),
                            col_double()), skip=1)
-                      
-
+# Read CONE data
 df_cone <- read_csv("./data/cone.csv", col_names=
                       c("date", 
                         "cone_close", 
@@ -590,7 +632,7 @@ df_cone <- read_csv("./data/cone.csv", col_names=
                            col_double(),
                            col_double(),
                            col_double()), skip=1)
-
+# Read FB data
 df_fb <- read_csv("./data/fb.csv", col_names=
                       c("date", 
                         "fb_close", 
@@ -604,7 +646,7 @@ df_fb <- read_csv("./data/fb.csv", col_names=
                            col_double(),
                            col_double(),
                            col_double()), skip=1)
-
+# Read GOOG data
 df_goog <- read_csv("./data/goog.csv", col_names=
                       c("date", 
                         "goog_close", 
@@ -618,7 +660,7 @@ df_goog <- read_csv("./data/goog.csv", col_names=
                            col_double(),
                            col_double(),
                            col_double()), skip=1)
-
+# Read GOVT data
 df_govt <- read_csv("./data/govt.csv", col_names=
                       c("date", 
                         "govt_close", 
@@ -632,7 +674,7 @@ df_govt <- read_csv("./data/govt.csv", col_names=
                            col_double(),
                            col_double(),
                            col_double()), skip=1)
-
+# Read VZ data
 df_vz <- read_csv("./data/vz.csv", col_names=
                       c("date", 
                         "vz_close", 
@@ -646,7 +688,6 @@ df_vz <- read_csv("./data/vz.csv", col_names=
                            col_double(),
                            col_double(),
                            col_double()), skip=1)
-
 ```
 
 Here is what our data looks like:
@@ -696,7 +737,7 @@ Next, we read the balance sheet data for our equities from CSV files. For
 detailed information on our data source, consult **Appendix B**.
 
 ```{r read_bsheet}
-# Read balance sheet data from CSVs
+# Read bsheet data for AAPL
 df_aapl_b <- read_csv("./data/AAPL_bsheet.csv", col_names=
                       c("date", 
                         "aapl_book", 
@@ -704,7 +745,7 @@ df_aapl_b <- read_csv("./data/AAPL_bsheet.csv", col_names=
                       list(col_date(format="%m/%d/%Y"),
                            col_double(),
                            col_guess()), skip=1)
-
+# Read bsheet data for CONE
 df_cone_b <- read_csv("./data/CONE_bsheet.csv", col_names=
                       c("date", 
                         "cone_book",
@@ -712,7 +753,7 @@ df_cone_b <- read_csv("./data/CONE_bsheet.csv", col_names=
                       list(col_date(format="%m/%d/%Y"),
                            col_guess(),
                            col_guess()), skip=1)
-
+# Read bsheet data for FB
 df_fb_b <- read_csv("./data/FB_bsheet.csv", col_names=
                       c("date", 
                         "fb_book", 
@@ -720,7 +761,7 @@ df_fb_b <- read_csv("./data/FB_bsheet.csv", col_names=
                       list(col_date(format="%m/%d/%Y"),
                            col_guess(),
                            col_guess()), skip=1)
-
+# Read bsheet data for GOOG
 df_goog_b <- read_csv("./data/GOOG_bsheet.csv", col_names=
                       c("date", 
                         "goog_book", 
@@ -728,7 +769,7 @@ df_goog_b <- read_csv("./data/GOOG_bsheet.csv", col_names=
                       list(col_date(format="%m/%d/%Y"),
                            col_guess(),
                            col_guess()), skip=1)
-
+# Read bsheet data for VZ
 df_vz_b <- read_csv("./data/VZ_bsheet.csv", col_names=
                       c("date", 
                         "vz_book", 
@@ -776,7 +817,8 @@ head(df_vz_b)
 
 ### Prepping the Parsed Data
 
-Now, we prepare our raw data for the calculation of our factors. 
+Now, we prepare our raw data for the calculation of our factors. The contents
+of the dataframes are shown.
 
 ```{r, prep_h}
 # Joining our data into a single dateframe and adding the earliest book
@@ -784,30 +826,31 @@ Now, we prepare our raw data for the calculation of our factors.
 # For convenience, we also simplify our attribute names.
 # Lastly, we sort by ascending date
 
+# Join AAPL
 df_aapl <- df_aapl %>%
   full_join(df_aapl_b, by="date") %>%
   dplyr::rename("close"=2, "high"=3, "low"=4, "vol"=5, "change"=6, "book"=7, 
                 "outS"=8) %>%
   arrange(date)
-
+# Join CONE
 df_cone <- df_cone %>%
   full_join(df_cone_b, by="date") %>%
   dplyr::rename("close"=2, "high"=3, "low"=4, "vol"=5, "change"=6, "book"=7, 
                 "outS"=8) %>%
   arrange(date)
-
+# Join FB
 df_fb <- df_fb %>%
   full_join(df_fb_b, by="date") %>%
   dplyr::rename("close"=2, "high"=3, "low"=4, "vol"=5, "change"=6, "book"=7, 
                 "outS"=8) %>%
   arrange(date)
-
+# Join GOOG
 df_goog <- df_goog %>%
   full_join(df_goog_b, by="date") %>%
   dplyr::rename("close"=2, "high"=3, "low"=4, "vol"=5, "change"=6, "book"=7, 
                 "outS"=8) %>%
   arrange(date)
-
+# Join VZ
 df_vz <- df_vz %>%
   full_join(df_vz_b, by="date") %>%
   dplyr::rename("close"=2, "high"=3, "low"=4, "vol"=5, "change"=6, "book"=7, 
@@ -842,17 +885,12 @@ df_vz$outS <- na.locf(df_vz$outS)
 # Since earning reports don't always correspond to trading days, remove
 # dates that aren't trading days
 df_aapl <- filter(df_aapl, !is.na(close))
-
 df_cone <- filter(df_cone, !is.na(close))
-
 df_fb <- filter(df_fb, !is.na(close))
-
 df_goog <- filter(df_goog, !is.na(close))
-
 df_vz <- filter(df_vz, !is.na(close))
 
-# Calculate our factors
-  # Calculate market portfolio of returns and date
+# Calculate market portfolio of returns and date
 df_market <- df_aapl %>%
   select(date, cl_aapl=close, ch_aapl=change) %>%
   right_join(df_cone, by="date") %>%
@@ -912,12 +950,48 @@ df_market <- df_market %>%
   mutate(r_excess_market = r_market-df_govt$r)
 ```
 
+### Consolidated dataframes {.tabset .tabset-fade}
+The contents of each dataframe, after combining business sheet and daily
+data.
+
+#### AAPL
+Our AAPL dataframe:
+```{r, aapl_postproc}
+head(df_aapl)
+```
+
+#### CONE
+Our CONE dataframe:
+```{r, cone_postproc}
+head(df_cone)
+```
+
+#### FB
+Our FB dataframe:
+```{r, fb_postproc}
+head(df_fb)
+```
+
+#### GOOG
+Our GOOG dataframe:
+```{r, goog_postproc}
+head(df_goog)
+```
+
+#### VZ
+Our VZ dataframe:
+```{r, vz_postproc}
+head(df_vz)
+```
+
+
 ## Calculating the Factors
 
 Now we calculate the factors for each asset.
 ```{r, human_factors}
 # Calculate VLVR
 
+# Function that returns a dataframe with the VLVR
 get_vlvr <- function(df) {
   df <- df %>%
     right_join(df_market, by="date") %>%
@@ -959,9 +1033,8 @@ df_goog <- get_vlvr(df_goog)
 df_vz <- get_vlvr(df_vz)
 
 
+# Function that returns a dataframe with the HILO
 get_hilo <- function(df) {
-  # Calculate HILO factor
-
     # Calculate lowest and highest price for past trading month for every
     # trading day
 
@@ -986,8 +1059,7 @@ df_fb <- get_hilo(df_fb)
 df_goog <- get_hilo(df_goog)
 df_vz <- get_hilo(df_vz)
 
-# Calculate RSTR
-
+# Function that returns a dataframe with the RSTR
 get_rstr <- function(df) {
   df <- df %>%
      mutate(RSTR_l=
@@ -1027,7 +1099,7 @@ df_goog <- get_rstr(df_goog)
 df_vz <- get_rstr(df_vz)
 
 
-# Calculate LNCAP
+# Function that returns a dataframe with the LNCAP
 get_lncap <- function(df) {
   df <- df %>%
     mutate(LNCAP=log10(outS*lag(close, 1)))
@@ -1039,7 +1111,7 @@ df_fb <- get_lncap(df_fb)
 df_goog <- get_lncap(df_goog)
 df_vz <- get_lncap(df_vz)
 
-# Calculate LCAPCB
+# Function that returns a dataframe with the LCAPCB
 get_lcapcb <- function(df) {
   df <- df %>%
     mutate(LCAPCB=(log10(outS*lag(close, 1)))^(1/3))
@@ -1051,7 +1123,7 @@ df_fb <- get_lcapcb(df_fb)
 df_goog <- get_lcapcb(df_goog)
 df_vz <- get_lcapcb(df_vz)
 
-# Calculate BTOP
+# Function that returns a dataframe with the BTOP
 get_btop <- function(df) {
   df <- df %>%
     mutate(BTOP=book/(outS*lag(close, 1)))
@@ -1069,9 +1141,10 @@ df_vz <- get_btop(df_vz)
 Here, we tidy our data up and make necessary adjustments (taking the residual 
 factor values for example). We also separate our data into training and 
 testing sets.
+
+The datasets are shown after this process.
 ```{r, human_prep_reg}
 # Approximate Risk-free rate for the day
-
 r_f <- mean((filter(df_govt, date<"2017-01-03"))$r, na.rm=TRUE)
 
 # Trim data and make amenable to regression (get residual factor values)
@@ -1111,6 +1184,39 @@ test_vz <- filter(df_vz, date>="2017-01-03")
 
 ```
 
+### Regression-ready dataframes {.tabset .tabset-fade}
+The contents of each dataframe, which is ready for regression.
+
+#### AAPL
+Our AAPL dataframe:
+```{r, aapl_prereg}
+head(df_aapl)
+```
+
+#### CONE
+Our CONE dataframe:
+```{r, cone_prereg}
+head(df_cone)
+```
+
+#### FB
+Our FB dataframe:
+```{r, fb_prereg}
+head(df_fb)
+```
+
+#### GOOG
+Our GOOG dataframe:
+```{r, goog_prereg}
+head(df_goog)
+```
+
+#### VZ
+Our VZ dataframe:
+```{r, vz_prereg}
+head(df_vz)
+```
+
 ## Forecast Returns
 
 We add the forecasted returns to our dataframes.
@@ -1125,13 +1231,11 @@ fit_dat <- function(df) {
     md[[7,2]]*df$BTOP
   df
 }
-
 test_aapl <- fit_dat(test_aapl)
 test_cone <- fit_dat(test_cone)
 test_fb <- fit_dat(test_fb)
 test_goog <- fit_dat(test_goog)
 test_vz <- fit_dat(test_vz)
-
 
 # Remove extraneous variables
 rm(train_aapl, train_cone, train_fb, train_goog, train_vz,
@@ -1152,7 +1256,7 @@ test_vz <- test_vz %>%
 
 ## Create our Human Portfolio
 
-Finally, we create and test our human portfolio.
+Finally, we create and test our human portfolio on the test sample.
 
 ```{r, human_port_test}
 # Create portfolio
@@ -1186,7 +1290,6 @@ for (i in seq(1, nrow(pfolio)-1)) {
 }
 ```
 
-
 # Comparing our Monkey and Human Portfolios
 
 It's clear from the graph that the human portfolio outperforms the monkey
@@ -1216,16 +1319,6 @@ p <- p %>%
 
 ggplot(data=p, aes(x=date, y=val, color=p_type)) +
   geom_line()
-
-
-ggplot(data=pfolio, aes(x=date, y=val)) +
-  geom_line(color="#FC4E07") +
-  geom_line(data=pfolio_monkey, aes(x=date, y=val), color="#00AFBB") +
-  labs(title="Portfolio Value over time",
-         x = "Date",
-         y = "Total Value (Dollars)") + 
-  theme(plot.title = element_text(hjust = 0.5))
-
 
 ```
 
@@ -1259,11 +1352,13 @@ The return for the monkey portfolio was
 # Conclusion
 
 Our tutorial confirms our initial hypothesis that humans outperform the 
-theoretical monkeys in the area of asset management. It does not, however,
+theoretical monkeys in the arena of asset management. It does not, however,
 indicate that our particular strategy is ready for deployment in the real 
 world. In application, our strategy's returns would be diminished with
 the consideration of trading costs, be they liquidity demands or brokerage
-fees. 
+fees. Furthermore, we simplified many complications, which, in the real 
+world, are unavoidable. For example, we can't own fractions of a share, 
+like in our program!
 
 Furthermore, the theory of Arbitrage Pricing Theory neglects salient 
 statistical metrics that are commonly used in data science to assess the 
@@ -1276,6 +1371,15 @@ made out of time constraints.
 In conclusion, our tutorial confirms our hypothesis. That being said, our model
 is far from industry-ready. It can, however, be improved by combining concepts 
 in data science and financial theory.
+
+
+# References
+
+  * For more information on the theoretical foundations of APT, consult
+     + Financial Modeling of the Equity Market: From CAPM to Cointegration, 
+     available [here](https://onlinelibrary.wiley.com/doi/book/10.1002/9781119201236)
+  * For more information on factor choice, consult
+     + Barra's Risk Model Handbook, available [here](https://www.msci.com/www/research-paper/barra-s-risk-models/014972229)
 
 
 <!-- 
@@ -1314,7 +1418,8 @@ Appendices
 Appendices 
 -->
 
-# Appendix A: JSON to CSV
+# Appendices
+## Appendix A: JSON to CSV
 
 The following code was run once to extract the following daily historical data 
 over the past 5 years from the date of the JSON call:
@@ -1398,7 +1503,7 @@ write_csv(df_govt, "govt.csv")
 write_csv(df_vz, "vz.csv")
 ```
 
-# Appendix B: Historical Balance Sheet Data
+## Appendix B: Historical Balance Sheet Data
 
 Initially, we attempted to obtain curated balance sheet data directly from the 
 IEX Cloud service. This data, however, was limiting and lacked the accuracy
@@ -1408,7 +1513,7 @@ Thus, the balance sheet data was scrapped by hand from the SEC's [EDGAR Database
 This process was *not* automated due to the uncompromising age of the 
 database's technology, which prevented even a simple parse of its HTML pages. As
 consequence, the balance sheet data was scrapped from each company's 10-K and 
-10-Q SEC filings (10-K and 10-Q forms resepctively are annual and quarterly 
+10-Q SEC filings (10-K and 10-Q forms respectively are annual and quarterly 
 reports on a company's corporate standing). The following data was parsed:
 
   * Annual Book Value
