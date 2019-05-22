@@ -1,0 +1,418 @@
+---
+title: "Can Monkeys Beat Humans in the Stock Market?"
+author: "Jason Gill, Kalinda Vathupola"
+date: "May 22, 2019"
+abstract: "In this project, we compare the performance of two portfolios, \\
+  both with an initial capital of $1,000,000: one is managed by monkeys \\
+  whereas the other is managed by humans. The former portfolio is constructed \\
+  by randomized stock picks. The latter portfolio is constructed using a \\
+  multi-factor valuation model adhering to Arbitrage Pricing Theory with \\
+  a basic allocation model. Performance is assessed in terms of portfolio \\
+  value at the end of the testing period."
+output: 
+  html_document:
+    theme: paper
+---
+
+<style>
+
+h1.title {
+  text-align: center;
+}
+h4.author {
+  text-align: center;
+}
+h4.date {
+  text-align: center;
+}
+h5.abstract{
+  text-align: center;
+}
+blockquote {
+    background: #eee;
+    border-radius: 5px;
+}
+
+blockquote p {
+    padding: 15px;
+}
+
+blockquote p::before {
+    content: '\201C';
+}
+
+blockquote p::after {
+    content: '\201D';
+}
+</style>
+
+## Introduction
+
+The objective of this tutorial is to provide a motivated project as an example 
+of using R in a realistic application.  This project seeks to answer a simple 
+question: Who would be better at picking stocks: Monkeys or Humans? Is the stock
+market a game of skill or luck? Let's find out!
+
+### Hypothesis
+
+Our hypothesis is:
+
+<center>
+  Humans outperform monkeys in portfolio management.
+</center>
+
+### Experimental Significance
+
+At first glance, our experiment appears to be nothing more than an attempt
+to answer a juvenile curiosity of little practical importance. Its actual 
+implications, however, are quite significant.
+
+The actual question is: does the application of quantitative financial theory 
+improve the ability of portfolio managers to gain superior returns? If humans
+succeed over the monkeys, the answer is an affirmative one. The "monkey" 
+potrfolio is merely a proxy for a randomly constructed one. The specific
+financial theory to be tested is Arbitrage Pricing Theory, which makes use
+of multilinear regression to predict equity returns.
+
+Yet the question remains: Is there any point in applying sophisticated data
+science to merely get money? From a business standpoint, the answer is clearly
+a "yes." Asset management firms, be it for high-net worth clients or pension
+funds, will be able to increase economic efficiency by supplanting the work
+of many financial analysts with a few data scientists, thereby increasing
+employee and client returns. From a data-science standpoint, financial models 
+returns can have their fundamental theory applied to other cases concerning stochastic forecasting, such as fluid dynamics, tumor growth etc. Indeed, 
+physical [models of Brownian motion]
+(https://en.wikipedia.org/wiki/Ornstein%E2%80%93Uhlenbeck_process#Application_in_financial_mathematics) have found use in finance.
+
+### Experimental Procedure
+
+This experiment is divided into three stages, which will be presented
+sequentially:
+  1. The construction of the monkey portfolio
+  2. The construction of the human potrfolio
+  3. Assessment of portfolio performance
+As stated previously, the "monkey" portoflio is merely a proxy term for 
+a randomly-constructed portfolio devoid of financial theory. The human
+portoflio applies Arbitrage Pricing Theory to model daily stock returns as 
+a multilinear regression moedl. 
+
+Though there exist many metrics for assessing portfolio performance, we use
+total portfolio value for simplicity of computation and brevity of explanation.
+
+Before we begin the construction of either portfolio, let's load the libraries:
+```{r load_lib, message=FALSE}
+library(jsonlite)
+library(httr)
+library(tidyverse)
+library(dplyr)
+library(zoo)
+library(RcppRoll)
+library(tibble)
+```
+
+# Creating the Monkey Portfolio
+
+## Loading Data
+
+We will be getting the stock data that we need 
+using the Investors Exchange (IEX) API.  You can read more about this dataset 
+here: https://iextrading.com/developer/docs/ get stock data over the last 2 years for Apple
+
+```{r load_dat1, message=FALSE}
+
+#collect data
+r <- GET("https://api.iextrading.com/1.0/stock/market/batch",
+         query = list(symbols = "aapl", 
+                      types = "chart",
+                      range = "2y", last = "5")
+)
+```
+
+To get the data, we will be using an HTTP request that will return data in a 
+JSON format.  To learn more about JSON, check out the wikipedia article here: 
+https://en.wikipedia.org/wiki/JSON
+
+## Data Preparation
+
+Congrats! We have some data. However, as you may notice, there  any way 
+to conveniently use this data.  We want to get the data into a more usable 
+format.   start by unpacking the JSON formatted data into a more readable
+format:
+
+```{r load_dat2}
+#upack data
+r1 <- content(r)
+rappl <- enframe(unlist(r1$AAPL$chart))
+
+#pull out relevant data
+rappl_dates <- filter(rappl, name=="date")
+rappl_close <- filter(rappl, name=="close")
+
+#put data into a single dataframe
+df <- data.frame(rappl_dates[2], rappl_close[2])
+df <- df %>%
+  dplyr::rename(date="value", aapl_close="value.1")
+
+head(df)
+```
+
+You should get a dataframe that looks similar to this.  Going forward we will 
+need to do this process for multiple stocks and get more attributes for each, so lets put all of this into a function which we can call repeatedly.  
+
+```{r load_dat3}
+#function to return dataframe of date, close, high, low, volume for ticker
+iex_chart <- function(tick, range){
+  r <- GET("https://api.iextrading.com/1.0/stock/market/batch",
+           query = list(symbols = tick, 
+                        types = "chart",
+                        range = range, last = "5")
+  )
+  r1 <- content(r)
+  rtick <- enframe(unlist(r1[[tick]]$chart))
+  rdates <- filter(rtick, name=="date") 
+  rclose <- filter(rtick, name=="close") 
+  rhigh <- filter(rtick, name=="high") 
+  rlow <- filter(rtick, name=="low") 
+  rvolume <- filter(rtick, name=="volume") 
+  df <- data.frame(rdates[2], rclose[2], rhigh[2], rlow[2], rvolume[2])
+  df <- df %>%
+    dplyr::rename(date="value", close="value.1", high="value.2", low="value.3", volume="value.4")
+  return(df)
+}
+
+#this funciton can be called with just the stock ticker and the timeframe
+head(iex_chart("AAPL","2y"))
+```
+
+## Preparing Monkey Data
+
+Now  time to set up our experiment.  We will need a dataframe over which 
+our monkeys can make random stock picks and see how their investments pan out.  
+First, let's get a bunch of data.  We used the method above to get data for 6 
+stocks over 5 years and saved it as a CSV earlier, so now lets just read that 
+data in.  We are going to put all this data into a single dataframe, so let's 
+also rename the columns so we can tell the data apart.  
+
+```{r prep_monkey1, message=FALSE}
+#Prepare monkey data
+aapl_df <- read_csv("./data/aapl.csv") %>%
+  dplyr::rename(aapl_close="close", aapl_high="high", aapl_low="low", 
+                aapl_vol="volume", aapl_change="change")
+cone_df <- read_csv("./data/cone.csv") %>%
+  dplyr::rename(cone_close="close", cone_high="high", cone_low="low", 
+                cone_vol="volume", cone_change="change")
+fb_df <- read_csv("./data/fb.csv") %>%
+  dplyr::rename(fb_close="close", fb_high="high", fb_low="low", 
+                fb_vol="volume", fb_change="change")
+goog_df <- read_csv("./data/goog.csv") %>%
+  dplyr::rename(goog_close="close", goog_high="high", goog_low="low", 
+                goog_vol="volume", goog_change="change")
+govt_df <- read_csv("./data/govt.csv") %>%
+  dplyr::rename(govt_close="close", govt_high="high", govt_low="low", 
+                govt_vol="volume", govt_change="change")
+vz_df <- read_csv("./data/vz.csv") %>%
+  dplyr::rename(vz_close="close", vz_high="high", vz_low="low", 
+                vz_vol="volume", vz_change="change")
+
+#join into one data frame
+df <- plyr::join_all(list(aapl_df,cone_df,fb_df,
+                    goog_df,govt_df,vz_df), 
+               by='date', type='left')
+
+head(df)
+```
+
+We want to focus on a specific period of time, and to do that we will need to 
+compare dates.  Let's turn our date column entries into date objects so we can 
+compare them to each other easily. 
+
+```{r prep_monkey2}
+#make date into date object
+df <- df %>%
+  type_convert(col_types = cols(date = col_date(format = "%Y-%m-%d")))
+```
+
+Now monkeys  very smart, so they will only care about the closing price 
+of the stock for a given day.  Let's get rid of the rest of the columns for now.  
+
+```{r prep_monkey3}
+#select date and close for each stock
+df <- select(df,date,aapl_close,cone_close,fb_close,goog_close,govt_close,vz_close)
+
+head(df)
+```
+
+We now have a dataframe that is ready for the monkey side of the experiment. 
+
+## Monkey Experiment
+
+The monkeys will buy a new stock every week (5 business days).  We can pick 
+every 5th entry using the slice command.  Also, we will be testing the monkeys 
+over a specific period, so also filter out any rows that  fall 
+between our test period, from 1/03/17 to 05/10/2019.
+
+```{r exp_monkey1}
+#keep data for testing period, 1/03/2017 - 05/10/2019
+df <- filter(df, as.POSIXct(date) >= as.POSIXct("2017-03-01") &
+           as.POSIXct(date) <= "2019-05-10")
+#take every 5th value to get one per week
+df <- slice(df, seq(2, nrow(df), by=5))
+```
+
+We use the function as.POSIXct as a way to easily compare dates.  Now
+give our monkeys some money and see how they do.  First, create an empty column 
+which will be the monkeysportfolio, and start them off with a small loan of 
+a million dollars.  
+
+```{r exp_monkey2}
+#create empty column which will be for portfolio
+df$portfolio_val <- NA #blank column
+df$portfolio_val[1] <- 1000000 #start off with $1,000,000
+```
+
+We are ready for the monkeys to make their stock picks.  The monkeys will 
+operate in the following fassion: 
+  1. Pick a stock out of the 6 options at random to buy
+  2. Buy as many of that stock as they can afford with what is in the portfolio
+  3. Sell them next week and do the same thing for a newly chosen stock 
+Here is that process in action:
+
+```{r exp_monkey3}
+for(i in 2:nrow(df)){
+  #choose a random stock
+  pick = floor(runif(1, min=2, max=8))
+  prev_close = ifelse(pick==2, df$aapl_close[i-1],
+                  ifelse(pick==3, df$cone_close[i-1],
+                    ifelse(pick==4, df$fb_close[i-1],
+                      ifelse(pick==5, df$goog_close[i-1],
+                        ifelse(pick==6, df$govt_close[i-1], 
+                          ifelse(pick==7, df$vz_close[i-1], 0))))))
+  num_shares = df$portfolio_val[i-1]/prev_close
+  curr_close = ifelse(pick==2, df$aapl_close[i],
+                ifelse(pick==3, df$cone_close[i],
+                  ifelse(pick==4, df$fb_close[i],
+                    ifelse(pick==5, df$goog_close[i],
+                      ifelse(pick==6, df$govt_close[i], 
+                        ifelse(pick==7, df$vz_close[i], 0))))))
+  df$portfolio_val[i] = num_shares*curr_close
+}
+#The long if statements are necessary due to the random picks and some quirks
+#of the r language.  This will work for our small experiment, however this 
+#workaround would not scale well in a practical version.  
+```
+
+We now have our monkey stock performance.  We can calculate how well the monkeys did but looking at their net portfolio change for each week, and plot this over 
+time to get an overall sense of their performance. 
+
+```{r exp_monkey4}
+monkey_df <- df %>%
+  select(date, portfolio_val) %>%
+  mutate(net_portfolio_change = portfolio_val - 1000000)
+
+#plot monkey returns
+monkey_df %>%
+  ggplot(mapping=aes(x=date, y=net_portfolio_change)) + geom_line()
+```
+
+Let's write this data to a file and hold onto it for now. 
+
+```{r exp_monkey5, eval=FALSE}
+write_csv(monkey_df, "monkey_df.csv")
+```
+
+# Creating the Human Portfolio
+
+## Data Curation
+
+First, we read the data in from CSV files. 
+
+<blockquote> <p> Words can be like X-rays, if you use them properly - they'll go through anything. You read and you're pierced. </p> </blockquote>
+
+```{r read_close}
+# Read price data from CSV files
+df_aapl <- read_csv("./data/aapl.csv", col_names=
+                      c("date", 
+                        "aapl_close", 
+                        "aapl_high",
+                        "aapl_low",
+                        "aapl_vol",
+                        "aapl_change"), col_types=
+                      list(col_date(format="%Y-%m-%d"),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double()), skip=1)
+                      
+
+df_cone <- read_csv("./data/cone.csv", col_names=
+                      c("date", 
+                        "cone_close", 
+                        "cone_high",
+                        "cone_low",
+                        "cone_vol",
+                        "cone_change"), col_types=
+                      list(col_date(format="%Y-%m-%d"),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double()), skip=1)
+
+df_fb <- read_csv("./data/fb.csv", col_names=
+                      c("date", 
+                        "fb_close", 
+                        "fb_high",
+                        "fb_low",
+                        "fb_vol",
+                        "fb_change"), col_types=
+                      list(col_date(format="%Y-%m-%d"),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double()), skip=1)
+
+df_goog <- read_csv("./data/goog.csv", col_names=
+                      c("date", 
+                        "goog_close", 
+                        "goog_high",
+                        "goog_low",
+                        "goog_vol",
+                        "goog_change"), col_types=
+                      list(col_date(format="%Y-%m-%d"),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double()), skip=1)
+
+df_govt <- read_csv("./data/govt.csv", col_names=
+                      c("date", 
+                        "govt_close", 
+                        "govt_high",
+                        "govt_low",
+                        "govt_vol",
+                        "govt_change"), col_types=
+                      list(col_date(format="%Y-%m-%d"),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double()), skip=1)
+
+df_vz <- read_csv("./data/vz.csv", col_names=
+                      c("date", 
+                        "vz_close", 
+                        "vz_high",
+                        "vz_low",
+                        "vz_vol",
+                        "vz_change"), col_types=
+                      list(col_date(format="%Y-%m-%d"),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double(),
+                           col_double()), skip=1)
+
+```
