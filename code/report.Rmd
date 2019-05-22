@@ -16,6 +16,7 @@ output:
     theme: paper
 ---
 
+
 <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
 
 
@@ -1188,7 +1189,9 @@ for (i in seq(1, nrow(pfolio)-1)) {
 
 # Comparing our Monkey and Human Portfolios
 
-It's clear from the graph that our 
+It's clear from the graph that the human portfolio outperforms the monkey
+portfolio. Having both stated with 1,000,000 dollars, both portfolios
+earned a profit, but the human portfolio earned the most.
 
 ```{r, port_eval}
 # Read the performance of our monkey data
@@ -1225,6 +1228,54 @@ ggplot(data=pfolio, aes(x=date, y=val)) +
 
 
 ```
+
+## Final Portfolio Values {.tabset .tabset-fade}
+
+### Human Portfolio
+
+Our human portfolio returned the following amount after the training 
+period:
+```{r, human_net}
+pfolio[[nrow(pfolio),17]]
+```
+The return for the human portfolio was
+```{r, human_ret}
+(pfolio[[nrow(pfolio),17]]-1000000)/1000000
+```
+
+
+### Monkey Portfolio
+
+Our monkey portfolio returned the following amount after the training 
+period:
+```{r, monkey_net}
+pfolio_monkey[[nrow(pfolio_monkey),2]]
+```
+The return for the monkey portfolio was
+```{r, monkey_ret}
+(pfolio_monkey[[nrow(pfolio_monkey),2]]-1000000)/1000000
+```
+
+# Conclusion
+
+Our tutorial confirms our initial hypothesis that humans outperform the 
+theoretical monkeys in the area of asset management. It does not, however,
+indicate that our particular strategy is ready for deployment in the real 
+world. In application, our strategy's returns would be diminished with
+the consideration of trading costs, be they liquidity demands or brokerage
+fees. 
+
+Furthermore, the theory of Arbitrage Pricing Theory neglects salient 
+statistical metrics that are commonly used in data science to assess the 
+applicability of a model, namely $p$-value assessment. Considering the 
+overall design of our experiment, we could have returned more significant results
+by considering multiple monkey portfolios. As it stands, it is not sufficient
+to merely use one instance of a monkey portfolio. This decision, however, was
+made out of time constraints.
+
+In conclusion, our tutorial confirms our hypothesis. That being said, our model
+is far from industry-ready. It can, however, be improved by combining concepts 
+in data science and financial theory.
 
 
 <!-- 
