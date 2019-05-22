@@ -1318,7 +1318,11 @@ p <- p %>%
 # Plot the data
 
 ggplot(data=p, aes(x=date, y=val, color=p_type)) +
-  geom_line()
+  geom_line() +
+  labs(title="Portfolio value over test period",
+         x = "Date",
+         y = "Portfolio Value (Dollars)") + 
+    theme(plot.title = element_text(hjust = 0.5)) 
 
 ```
 
@@ -1326,7 +1330,7 @@ ggplot(data=p, aes(x=date, y=val, color=p_type)) +
 
 ### Human Portfolio
 
-Our human portfolio returned the following amount after the training 
+Our human portfolio returned the following amount after the testing
 period:
 ```{r, human_net}
 pfolio[[nrow(pfolio),17]]
@@ -1339,7 +1343,7 @@ The return for the human portfolio was
 
 ### Monkey Portfolio
 
-Our monkey portfolio returned the following amount after the training 
+Our monkey portfolio returned the following amount after the testing
 period:
 ```{r, monkey_net}
 pfolio_monkey[[nrow(pfolio_monkey),2]]
