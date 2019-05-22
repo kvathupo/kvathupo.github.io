@@ -264,7 +264,7 @@ df_vz <- get_returns(df_vz)
 df_market <- df_market %>%
   mutate(r_excess_market = r_market-df_govt$r)
 
-# Calculate residual return and its standard deviation for each stock
+# Calculate VLVR
 
 get_vlvr <- function(df) {
   df <- df %>%
