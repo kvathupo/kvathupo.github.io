@@ -11,8 +11,12 @@ abstract: "In this project, we compare the performance of two portfolios, \\
   value at the end of the testing period."
 output: 
   html_document:
+    toc: true
     theme: paper
 ---
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+
 
 <style>
 
@@ -28,22 +32,15 @@ h4.date {
 h5.abstract{
   text-align: center;
 }
-blockquote {
+.note {
     background: #eee;
-    border-radius: 5px;
-}
-
-blockquote p {
+    border-radius: 2.5px;
+    font-size: 12px;
     padding: 15px;
+    text-align: justify;
+    text-justify: inter-word;
 }
 
-blockquote p::before {
-    content: '\201C';
-}
-
-blockquote p::after {
-    content: '\201D';
-}
 </style>
 
 ## Introduction
@@ -52,6 +49,11 @@ The objective of this tutorial is to provide a motivated project as an example
 of using R in a realistic application.  This project seeks to answer a simple 
 question: Who would be better at picking stocks: Monkeys or Humans? Is the stock
 market a game of skill or luck? Let's find out!
+
+<p class="note">
+**Important Note**: Consult the **glossary** for detailed information on most
+financial terms used in this project.
+</p>
 
 ### Hypothesis
 
@@ -322,11 +324,43 @@ write_csv(monkey_df, "monkey_df.csv")
 
 # Creating the Human Portfolio
 
+## Theoretical Overview
+
+Before we can start constructing our portfolio, we need to understand what we're
+trying to achieve! To this end, we need to understand the financial theory 
+being applied. Much of this material is adapted from the following, wonderful text:
+
+  [Fabozzi, Frank J., et al. Financial Modeling of the Equity Market: from CAPM to Cointegration. Wiley, 2006.](https://onlinelibrary.wiley.com/doi/book/10.1002/9781119201236)
+  
+For the sake of brevity, we provide a high-level overview. For more detail, 
+consult **Appendix C**. If this is still not sufficient, consult the textbook
+above.
+
+Fundamentally, we wish to train a regression model on training data. This model
+is then applied to unseen test data in order to forecast the daily returns of
+equities. This model is then used for investment decisions by, in our case,
+investing all of our capital in stocks with the greatest expected return.
+
+## Delving into Theory
+
+We use the following regression model:
+
+$$
+E(R_i) = R_f + \sum_{k=1}^N \beta_{ik} \big( E(F_k) - R_f \big) + \varepsilon,
+$$
+where $R_i$ is the return of the $i$th asset 
+
 ## Data Curation
 
-First, we read the data in from CSV files. 
+### Parsing the Raw Data
 
-<blockquote> <p> Words can be like X-rays, if you use them properly - they'll go through anything. You read and you're pierced. </p> </blockquote>
+First, we read the daily price data from CSV files. 
+
+<p class="note"> Note: the CSV data was obtained by making JSON calls 
+to the IEX API, parsing the data, and writing it to a CSV. This was 
+done in order to ensure our experiment does not depend on the time 
+of execution. Furthermore, the free IEX API will be deprecated on June 1, 
+2019. See **Appendix A** for the code. </p>
 
 ```{r read_close}
 # Read price data from CSV files
@@ -416,3 +450,317 @@ df_vz <- read_csv("./data/vz.csv", col_names=
                            col_double()), skip=1)
 
 ```
+
+Here is what our data looks like:
+
+### Dataframes from Historical Data {.tabset .tabset-fade}
+The contents of each dataframe, after reading from csv:
+
+#### AAPL
+
+```{r, df_tab_1}
+head(df_aapl)
+```
+
+#### CONE
+
+```{r, df_tab_2}
+head(df_cone)
+```
+
+#### FB
+
+```{r, df_tab_3}
+head(df_fb)
+```
+
+#### GOOG
+
+```{r, df_tab_4}
+head(df_goog)
+```
+
+#### GOVT
+
+```{r, df_tab_5}
+head(df_govt)
+```
+
+#### VZ 
+
+```{r, df_tab_6}
+head(df_vz)
+```
+
+### Balance Sheet Data
+
+Next, we read the balance sheet data for our equities from CSV files. For 
+detailed information on our data source, consult **Appendix B**.
+
+```{r read_bsheet}
+# Read balance sheet data from CSVs
+df_aapl_b <- read_csv("./data/AAPL_bsheet.csv", col_names=
+                      c("date", 
+                        "aapl_book", 
+                        "aapl_outS"), col_types=
+                      list(col_date(format="%m/%d/%Y"),
+                           col_double(),
+                           col_guess()), skip=1)
+
+df_cone_b <- read_csv("./data/CONE_bsheet.csv", col_names=
+                      c("date", 
+                        "cone_book",
+                        "cone_outS"), col_types=
+                      list(col_date(format="%m/%d/%Y"),
+                           col_guess(),
+                           col_guess()), skip=1)
+
+df_fb_b <- read_csv("./data/FB_bsheet.csv", col_names=
+                      c("date", 
+                        "fb_book", 
+                        "fb_outS"), col_types=
+                      list(col_date(format="%m/%d/%Y"),
+                           col_guess(),
+                           col_guess()), skip=1)
+
+df_goog_b <- read_csv("./data/GOOG_bsheet.csv", col_names=
+                      c("date", 
+                        "goog_book", 
+                        "goog_outS"), col_types=
+                      list(col_date(format="%m/%d/%Y"),
+                           col_guess(),
+                           col_guess()), skip=1)
+
+df_vz_b <- read_csv("./data/VZ_bsheet.csv", col_names=
+                      c("date", 
+                        "vz_book", 
+                        "vz_outS"), col_types=
+                      list(col_date(format="%m/%d/%Y"),
+                           col_guess(),
+                           col_guess()), skip=1)
+```
+
+Here is what our data looks like:
+
+### Dataframes from Balance Sheets {.tabset .tabset-fade}
+The contents of each dataframe, after reading from csv:
+
+#### AAPL
+
+```{r, dfb_tab_1}
+head(df_aapl_b)
+```
+
+#### CONE
+
+```{r, dfb_tab_2}
+head(df_cone_b)
+```
+
+#### FB
+
+```{r, dfb_tab_3}
+head(df_fb_b)
+```
+
+#### GOOG
+
+```{r, dfb_tab_4}
+head(df_goog_b)
+```
+
+#### VZ
+
+```{r, dfb_tab_6}
+head(df_vz_b)
+```
+
+
+### Prepping the Parsed Data
+
+Now, we prepare our raw data for the calculation of our factors. 
+
+
+
+
+<!-- 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+AAppendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices ppendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+Appendices 
+-->
+
+# Appendix A: JSON to CSV
+
+The following code was run once to extract the following daily historical data 
+over the past 5 years from the date of the JSON call:
+
+  * The trading day
+  * The close price of the stock
+  * The high of the stock
+  * The low of the stock
+  * The volume of the stock
+  * The daily change in stock price
+
+This data was extracted for the following equities, tradeable on the IEX 
+exchange:
+  
+  * AAPL: Apple Inc.
+  * CONE: CyrusOne Inc. 
+  * FB: Facebook Inc. (Class A stock)
+  * GOOG: Google Inc. (Alphabet Class C stock)
+  * GOVT: iShares Core U.S. Treasury Bond ETF
+  * VZ: Verizon Communications Inc.
+  
+```{r json_to_csv, eval=FALSE}
+## 
+# Returns a dataframe of date, close, high, low, and volume
+# 
+# @param: tick
+#         String, the stock ticker whose data we want
+# @param: range
+#         String, the range of data. We will use "5y"
+#
+# @author: Jared Gill
+iex_chart <- function(tick, range){
+  # Make REST call
+  r <- GET("https://api.iextrading.com/1.0/stock/market/batch",
+           query = list(symbols = tick, 
+                        types = "chart",
+                        range = range, last = "5")
+  )
+  
+  # Remove formatting
+  r1 <- content(r)
+  rtick <- enframe(unlist(r1[[tick]]$chart))
+  
+  # Extract data
+  rdates <- filter(rtick, name=="date") 
+  rclose <- filter(rtick, name=="close") 
+  rhigh <- filter(rtick, name=="high") 
+  rlow <- filter(rtick, name=="low") 
+  rvolume <- filter(rtick, name=="volume") 
+  rchange <- filter(rtick, name=="change")
+  
+  # Make data frame
+  df <- data.frame(rdates[2], rclose[2], rhigh[2], rlow[2], rvolume[2], 
+                   rchange[2])
+  
+  # Rename columns
+  df <- df %>%
+    rename(date="value", close="value.1", high="value.2", low="value.3",
+           volume="value.4", change="value.5")
+  return(df)
+}
+
+################################################################################
+# Main
+################################################################################
+
+# Convert data to dataframes
+df_aapl <- iex_chart("AAPL", "5y")
+df_cone <- iex_chart("CONE", "5y")
+df_fb <- iex_chart("FB", "5y")
+df_goog <- iex_chart("GOOG", "5y")
+df_govt <- iex_chart("GOVT", "5y")
+df_vz <- iex_chart("VZ", "5y")
+
+# Write to CSVs
+write_csv(df_aapl, "aapl.csv")
+write_csv(df_cone, "cone.csv")
+write_csv(df_fb, "fb.csv")
+write_csv(df_goog, "goog.csv")
+write_csv(df_govt, "govt.csv")
+write_csv(df_vz, "vz.csv")
+```
+
+# Appendix B: Historical Balance Sheet Data
+
+Initially, we attempted to obtain curated balance sheet data directly from the 
+IEX Cloud service. This data, however, was limiting and lacked the accuracy
+we required.
+
+Thus, the balance sheet data was scrapped by hand from the SEC's [EDGAR Database](https://www.sec.gov/edgar/aboutedgar.htm).
+This process was *not* automated due to the uncompromising age of the 
+database's technology, which prevented even a simple parse of its HTML pages. As
+consequence, the balance sheet data was scrapped from each company's 10-K and 
+10-Q SEC filings (10-K and 10-Q forms resepctively are annual and quarterly 
+reports on a company's corporate standing). The following data was parsed:
+
+  * Annual Book Value
+  * Quarterly Outstanding Shares
+  
+This data was parsed for the following equities (click to be redirected to 
+their respective 10-K and 10-Q filings on the EDGAR database):
+
+  * [AAPL](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000320193&type=10&dateb=&owner=exclude&count=40)
+  * [CONE](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001553023&type=10&dateb=&owner=exclude&count=40)
+  * [FB](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001326801&type=10&dateb=&owner=exclude&count=40)
+  * GOOG: [before](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001288776&type=10&dateb=&owner=exclude&count=40) and [after](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0001652044&type=10&dateb=&owner=exclude&count=40) the stock split.
+  * [VZ](https://www.sec.gov/cgi-bin/browse-edgar?action=getcompany&CIK=0000732712&type=10&dateb=&owner=exclude&count=40)
+  
+# Glossary
+
+**Asset**: Short for "financial asset," which is a tradeable financial 
+instrument. 
+
+**Change**: The change in an asset's price from an initial time $t_i$ to a 
+final time $t_f$. Defined as
+$$
+P_{t_f} - P_{t_i}
+$$
+
+**Close**: The price of an equity at the close of the trading day. The "price"
+of an equity is merely the dollar amount at which a transaction successfully 
+occurred between seller and buyer. Thus, the close is the last transaction
+price for an equity on a specific trading day.
+
+**Equity**: Used interchangeably with "stock."
+
+**High**: The highest price an equity achieved during the trading day.
+
+**Low**: The lowest price an equity achieved during the trading day.
+
+**Price**: Used interchangeably with "close."
+
+**Return**: The return of an asset $A$ is defined as
+$$
+R = \frac{P_{t_i + \Delta t} - P_{t_i}}{P_{t_i}},
+$$
+where $P_{t}$ refers to the price of $A$ at some time $t$. Thus,
+$P_{t_i}$ is the price of $A$ at some initial time $t_i$, and 
+$P_{t_i + \Delta t}$ is the price of $A$ at some future time, where
+$\Delta t$ refers to the elapsed time since $t_i$.
+
+**Risk-free Rate**: The return of the theoretical [risk-free asset](https://en.wikipedia.org/wiki/Risk-free_interest_rate).
+
+**Volume**: The number of shares traded during a given period of time.
