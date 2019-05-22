@@ -124,6 +124,7 @@ library(dplyr)
 library(zoo)
 library(RcppRoll)
 library(tibble)
+theme_set(theme_minimal())
 ```
 
 # Creating the Monkey Portfolio
@@ -132,7 +133,8 @@ library(tibble)
 
 We will be getting the stock data that we need 
 using the Investors Exchange (IEX) API.  You can read more about this dataset 
-here: https://iextrading.com/developer/docs/ get stock data over the last 2 years for Apple
+here: https://iextrading.com/developer/docs/ 
+Let's get stock data over the last 2 years for Apple to start.
 
 ```{r load_dat1, message=FALSE}
 
@@ -150,9 +152,9 @@ https://en.wikipedia.org/wiki/JSON
 
 ## Data Preparation
 
-Congrats! We have some data. However, as you may notice, there  any way 
+Congrats! We have some data. However, as you may notice, there isn't any way 
 to conveniently use this data.  We want to get the data into a more usable 
-format.   start by unpacking the JSON formatted data into a more readable
+format.  Let's start by unpacking the JSON formatted data into a more readable
 format:
 
 ```{r load_dat2}
@@ -248,8 +250,8 @@ df <- df %>%
   type_convert(col_types = cols(date = col_date(format = "%Y-%m-%d")))
 ```
 
-Now monkeys  very smart, so they will only care about the closing price 
-of the stock for a given day.  Let's get rid of the rest of the columns for now.  
+Now monkeys aren't very smart, so they will only care about the closing price 
+of the stock for a given day. Let's get rid of the rest of the columns for now.
 
 ```{r prep_monkey3}
 #select date and close for each stock
@@ -264,19 +266,19 @@ We now have a dataframe that is ready for the monkey side of the experiment.
 
 The monkeys will buy a new stock every week (5 business days).  We can pick 
 every 5th entry using the slice command.  Also, we will be testing the monkeys 
-over a specific period, so also filter out any rows that  fall 
+over a specific period, so let's also filter out any rows that don't fall 
 between our test period, from 1/03/17 to 05/10/2019.
 
 ```{r exp_monkey1}
 #keep data for testing period, 1/03/2017 - 05/10/2019
-df <- filter(df, as.POSIXct(date) >= as.POSIXct("2017-03-01") &
+df <- filter(df, as.POSIXct(date) >= as.POSIXct("2017-01-03") &
            as.POSIXct(date) <= "2019-05-10")
 #take every 5th value to get one per week
 df <- slice(df, seq(2, nrow(df), by=5))
 ```
 
 We use the function as.POSIXct as a way to easily compare dates.  Now
-give our monkeys some money and see how they do.  First, create an empty column 
+give our monkeys some money and see how they do.  First, create an empty column
 which will be the monkeysportfolio, and start them off with a small loan of 
 a million dollars.  
 
@@ -327,7 +329,11 @@ monkey_df <- df %>%
 
 #plot monkey returns
 monkey_df %>%
-  ggplot(mapping=aes(x=date, y=net_portfolio_change)) + geom_line()
+  ggplot(mapping=aes(x=date, y=portfolio_val)) + geom_line()+
+    labs(title="Portfolio value over test period",
+         x = "Date",
+         y = "Portfolio Value (Dollars)") + 
+    theme(plot.title = element_text(hjust = 0.5)) 
 ```
 
 Let's write this data to a file and hold onto it for now. 
@@ -1145,7 +1151,7 @@ test_vz <- test_vz %>%
 
 ## Create our Human Portfolio
 
-Finally, we create and test oru human portfolio.
+Finally, we create and test our human portfolio.
 
 ```{r, human_port_test}
 # Create portfolio
@@ -1178,6 +1184,48 @@ for (i in seq(1, nrow(pfolio)-1)) {
   }
 }
 ```
+
+
+# Comparing our Monkey and Human Portfolios
+
+It's clear from the graph that our 
+
+```{r, port_eval}
+# Read the performance of our monkey data
+pfolio_monkey <- read_csv("./data/monkey_df.csv", col_names=
+                      c("date", 
+                        "val", 
+                        "net_change"), col_types=
+                      list(col_date(format="%Y-%m-%d"),
+                           col_double(),
+                           col_double()), skip=1)
+
+# Join data
+pfolio_monkey <- mutate(pfolio_monkey, p_type="Monkey")
+pfolio <- mutate(pfolio, p_type="Human")
+p <- full_join(pfolio, pfolio_monkey)
+p$p_type <- factor(p$p_type)
+p <- p %>%
+  arrange(date) %>%
+  group_by(p_type)
+
+# Plot the data
+
+ggplot(data=p, aes(x=date, y=val, color=p_type)) +
+  geom_line()
+
+
+ggplot(data=pfolio, aes(x=date, y=val)) +
+  geom_line(color="#FC4E07") +
+  geom_line(data=pfolio_monkey, aes(x=date, y=val), color="#00AFBB") +
+  labs(title="Portfolio Value over time",
+         x = "Date",
+         y = "Total Value (Dollars)") + 
+  theme(plot.title = element_text(hjust = 0.5))
+
+
+```
+
 
 <!-- 
 Appendices 
