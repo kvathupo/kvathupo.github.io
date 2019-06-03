@@ -6,7 +6,7 @@ We apply Arbitrage Pricing Theory to determine if such a valuation model
 for US equities can outperform randomized stock picks. Of note, we achieved
 an annual return of 32.3% in test year 2017.
 
-To view the project, click [here](kvathupo.github.io).
+To view the project, click [here](https://kvathupo.github.io/).
 ## Who?
 Jared Gill and Kalinda Vathupola
 ## Where?
