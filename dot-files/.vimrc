@@ -1,3 +1,11 @@
+" -> functions <-
+" Set tabs to 2 spaces
+function! TabSmall()
+    set tabstop=2
+    set shiftwidth=2
+    set softtabstop=2
+    set expandtab
+endfunction
 " -> general <-
 set t_Co=256
 set ruler
