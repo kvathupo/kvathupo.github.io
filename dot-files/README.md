@@ -6,6 +6,7 @@ __7zip:__ Compression settings:
 
 __Git:__
 ```
+git commit --amend
 git rm --cached
 git -q
 ```
