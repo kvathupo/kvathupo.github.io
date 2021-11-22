@@ -17,6 +17,7 @@ endfunction
 " -> general <-
 set t_Co=256
 set ruler
+set hlsearch
 syntax on
 " -> tabs <-
 set tabstop=4
