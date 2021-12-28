@@ -18,6 +18,7 @@ endfunction
 set t_Co=256
 set ruler
 set hlsearch
+set tabpagemax=15
 syntax on
 " -> tabs <-
 set tabstop=4
