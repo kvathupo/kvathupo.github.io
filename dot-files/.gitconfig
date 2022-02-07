@@ -1,0 +1,10 @@
+[user]
+	name = kvathupo
+	email = kalinda619@gmail.com
+[core]
+	filemode = false
+[merge]
+	tool = vimdiff
+	conflictstyle = diff3
+[mergetool]
+	prompt = false
