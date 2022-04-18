@@ -3,6 +3,7 @@
 	email = kalinda619@gmail.com
 [core]
 	filemode = false
+	autocrlf = input
 [merge]
 	tool = vimdiff
 	conflictstyle = diff3
