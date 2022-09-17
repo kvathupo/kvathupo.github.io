@@ -6,6 +6,10 @@
     - https://people.cs.clemson.edu/~dhouse/courses/405/papers/optimize.pdf
 
 ## Links (Mainly from stackoverflow)
+* Computer Architecture:
+*   - [Page miss vs cache miss vs TLB miss](https://stackoverflow.com/questions/37825859/cache-miss-a-tlb-miss-and-page-fault)
+* Operating Systems:
+*   - [An exploration of "threads" in theory and practice](https://cs.stackexchange.com/a/48415)
 * Optimization and benchmarking:
     - [Idiomatic performance evaluation](https://stackoverflow.com/questions/60291987/idiomatic-way-of-performance-evaluation)
     - [Very nice answer from Peter Cordes on why a for loop with different bounds takes the same time](https://stackoverflow.com/questions/50924929/simple-for-loop-benchmark-takes-the-same-time-with-any-loop-bound/50934895#50934895)
