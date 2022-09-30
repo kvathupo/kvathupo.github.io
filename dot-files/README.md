@@ -13,6 +13,7 @@ git -q
 
 __Linux:__
 ```bash
+./run_benchmarks.sh &> /dev/null &      # run some script in background w/o printing everywhere
 find . -type f -not -path './_deps/*' | sort -rn | grep 'the_name_of_the_file_i_want'
 mpstat 2 1000   # leave console connected
 nice -n 20 ionice -c 3 cp -rv {SOURCE} {DEST}   # Soften machine duress
