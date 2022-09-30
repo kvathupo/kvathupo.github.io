@@ -13,6 +13,7 @@ git -q
 
 __Linux:__
 ```bash
+./run_benchmarks.sh 2>&1 | tee results.benchmark    # display and capture cerr, cout
 ./run_benchmarks.sh &> /dev/null &      # run some script in background w/o printing everywhere
 find . -type f -not -path './_deps/*' | sort -rn | grep 'the_name_of_the_file_i_want'
 mpstat 2 1000   # leave console connected
