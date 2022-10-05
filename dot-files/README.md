@@ -18,4 +18,5 @@ __Linux:__
 find . -type f -not -path './_deps/*' | sort -rn | grep 'the_name_of_the_file_i_want'
 mpstat 2 1000   # leave console connected
 nice -n 20 ionice -c 3 cp -rv {SOURCE} {DEST}   # Soften machine duress
+youtube-dl -f bestvideo+bestaudio '[video_URL]'
 ```
