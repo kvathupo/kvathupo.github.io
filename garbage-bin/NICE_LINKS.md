@@ -12,6 +12,7 @@
 * CUDA:
     - [Blog post explaining CUDA streams](https://leimao.github.io/blog/CUDA-Stream/)
 * Optimization and benchmarking:
+    - [Decoupling C and C++ I/O synchronization improves performance, but can cause UB](https://stackoverflow.com/questions/31162367/significance-of-ios-basesync-with-stdiofalse-cin-tienull)
     - [Idiomatic performance evaluation](https://stackoverflow.com/questions/60291987/idiomatic-way-of-performance-evaluation)
     - [Very nice answer from Peter Cordes on why a for loop with different bounds takes the same time](https://stackoverflow.com/questions/50924929/simple-for-loop-benchmark-takes-the-same-time-with-any-loop-bound/50934895#50934895)
     - [Optimization tips due to Donald House of Clemson, pdf](https://people.cs.clemson.edu/~dhouse/courses/405/papers/optimize.pdf)
@@ -27,6 +28,10 @@
 * Submodules:
     - [How do I use a specific tag with a submodule?](https://stackoverflow.com/a/18797720)
     - [How do I remove a submodule?](https://stackoverflow.com/a/1260982)
+
+## Math
+* Brain teasers:
+    - [Interesting answer to quant brain teaser about ants](https://math.stackexchange.com/a/1036904)
 
 ## Quotes
 * [When decompiling a C++ program, "'the soul' of the program is gone, just an empty shell of it's former self..."](https://stackoverflow.com/questions/205059/is-there-a-c-decompiler#comment78317622_205115)
