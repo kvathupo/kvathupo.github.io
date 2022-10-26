@@ -20,3 +20,9 @@ mpstat 2 1000   # leave console connected
 nice -n 20 ionice -c 3 cp -rv {SOURCE} {DEST}   # Soften machine duress
 youtube-dl -f bestvideo+bestaudio '[video_URL]'
 ```
+
+__Python:__
+```python
+from subprocess import check_output
+check_output("ls -l", shell=True)
+```
