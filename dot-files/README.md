@@ -21,6 +21,17 @@ nice -n 20 ionice -c 3 cp -rv {SOURCE} {DEST}   # Soften machine duress
 youtube-dl -f bestvideo+bestaudio '[video_URL]'
 ```
 
+__Ubuntu:__
+* If using newer versions of gcc on fresh installs, then update these garbage
+symlinks since ubuntu uses `/bin/c++` as the default with `cmake`. Note that 
+aliasing doesn't work since they're user-specific.
+```bash
+readlink /usr/bin/c++       # should point to `/etc/alternatives/c++`
+readlink /etc/alternatives/c++      # should point to `/usr/bin/g++`
+readlink /usr/bin/g++       # should be a real link (finally!)
+```
+
+
 __Python:__
 ```python
 from subprocess import check_output
