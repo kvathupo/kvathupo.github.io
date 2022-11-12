@@ -6,22 +6,38 @@ __7zip:__ Compression settings:
 
 __Git:__
 ```bash
-git commit --amend
+git pull --rebase
 git rm --cached
-git -q
+git commit --amend
 ```
 
 __Linux:__
 ```bash
+#
+#   bash scripting
+#
 # display and capture cerr, cout
 ./run_benchmarks.sh 2>&1 | tee results.benchmark    
 # run some script in background w/o printing everywhere
 ./run_benchmarks.sh &> /dev/null &      
+
+
+#
+#   Search utilities
+#
 find . -type f -not -path './_deps/*' | sort -rn | grep 'the_name_of_the_file_i_want'
+
+#
+#   quality-of-life cli
+#
 # leave console connected
 mpstat 2 1000   
 # Soften machine duress
 nice -n 20 ionice -c 3 cp -rv {SOURCE} {DEST}   
+
+#
+#   third-party
+#
 youtube-dl -f bestvideo+bestaudio '[video_URL]'
 ```
 
@@ -30,12 +46,9 @@ __Ubuntu:__
 symlinks since ubuntu uses `/bin/c++` as the default with `cmake`. Note that 
 aliasing doesn't work since they're user-specific.
 ```bash
-# should point to `/etc/alternatives/c++`
-readlink /usr/bin/c++       
-# should point to `/usr/bin/g++`
-readlink /etc/alternatives/c++      
-# should be a real link (finally!)
-readlink /usr/bin/g++       
+readlink /usr/bin/c++       # should point to `/etc/alternatives/c++`
+readlink /etc/alternatives/c++      # should point to `/usr/bin/g++`
+readlink /usr/bin/g++       # should be a real link (finally!)
 ```
 
 __PowerShell:__
@@ -43,13 +56,24 @@ __PowerShell:__
 ```pwsh
 # Observe running instances
 wsl -l -v
-# Frees all memory (can persist even if all WSL instances stopped
+# Frees all memory (use can persist if all instances stopped)
 wsl --shutdown
 ```
 
 
 __Python:__
 ```python
+#
+#   Shell interaction
+#
 from subprocess import check_output
 check_output("ls -l", shell=True)
+
+#
+#   E-Trade data
+#
+df = pd.read_csv('HOOLI.csv', index_col='Date')
+def summarize(t = df.shape[0]):
+    print('Over the last ' + str(t) + ' days (of ' + str(df.shape[0]) + ')')
+    print("Avg. return selling at high from open: " + str(df['High-Open'][-t:].mean()) + "\nAverage Spread: " + str(df['Spread'][-t:].mean()))
 ```
