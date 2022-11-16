@@ -152,5 +152,16 @@
 	
 	\begin{hwProblem}[1]
         Answer to problem.
+        
+        % Tables with alternating row colors strike when you least expect it!
+        \rowcolors{2}{gray!25}{white}
+        \begin{tabular}{cc}
+            \rowcolor{gray!50}
+            Table head & Table head\\
+            Some values & Some values\\
+            Some values & Some values\\
+            Some values & Some values\\
+            Some values & Some values\\
+        \end{tabular}
 	\end{hwProblem}
 \end{document}
