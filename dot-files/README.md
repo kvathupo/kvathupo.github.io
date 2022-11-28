@@ -12,6 +12,7 @@ git commit --amend
 ```
 
 __Linux:__
+* Useful Commands:
 ```bash
 #
 #   bash scripting
@@ -40,6 +41,9 @@ nice -n 20 ionice -c 3 cp -rv {SOURCE} {DEST}
 #
 youtube-dl -f bestvideo+bestaudio '[video_URL]'
 ```
+* Even though it's on Nvidia's installation guide (as of this writing), __do not__ 
+install CUDA via a Linux package manager. Instead, just use the package Nvidia rolls,
+and make the mandatory path changes (also in that guide).
 
 __Ubuntu:__
 * If using newer versions of gcc on fresh installs, then update these garbage
