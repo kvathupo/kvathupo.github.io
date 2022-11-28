@@ -7,6 +7,8 @@
     - [Page miss vs cache miss vs TLB miss](https://stackoverflow.com/questions/37825859/cache-miss-a-tlb-miss-and-page-fault)
 * Operating Systems:
     - [An exploration of "threads" in theory and practice](https://cs.stackexchange.com/a/48415)
+* Bash:
+    - [What is ${PATH:+:${PATH}}?](https://unix.stackexchange.com/questions/267506/what-does-pathpath-mean)
 
 ## C++
 * CUDA:
