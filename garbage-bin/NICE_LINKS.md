@@ -21,6 +21,7 @@
 * Memory:
     - [Why raw pointers aren't set to nullptr when moved](https://stackoverflow.com/a/9453330)
     - [The double-free problem for two shared pointers initialized from a raw pointer](https://stackoverflow.com/questions/41364700/when-should-we-use-stdenable-shared-from-this)
+    - [Why does the Standard not have a function returning page size?](https://stackoverflow.com/questions/3351940/detecting-the-memory-page-size#comment3480102_3351940)
 * The Standard:
     - [What does template rebinding do?](https://stackoverflow.com/a/14148870)
     - [Interesting discussion on why infinite loops are UB in C++, but not in C](https://news.ycombinator.com/item?id=25720760)
@@ -34,6 +35,11 @@
 ## Math
 * Brain teasers:
     - [Interesting answer to quant brain teaser about ants](https://math.stackexchange.com/a/1036904)
+
+## Stack Overflow Oddities
+* Famous People in the comments:
+    - [Martin Kersten](https://stackoverflow.com/questions/3928995/how-do-cache-lines-work#comment65785468_3947435)
+* [Unexpected Korean War general quote](https://stackoverflow.com/questions/48322288/how-can-i-go-decrement-the-iterator-of-a-stdmap-by-a-certain-number#comment83629642_48322319)
 
 ## Quotes
 * [When decompiling a C++ program, "'the soul' of the program is gone, just an empty shell of it's former self..."](https://stackoverflow.com/questions/205059/is-there-a-c-decompiler#comment78317622_205115)
