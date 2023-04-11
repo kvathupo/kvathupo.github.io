@@ -13,6 +13,7 @@ git commit --amend
 
 __Linux:__
 * Useful Commands:
+
 ```bash
 #
 #   bash scripting
@@ -49,6 +50,7 @@ __Ubuntu:__
 * If using newer versions of gcc on fresh installs, then update these garbage
 symlinks since ubuntu uses `/bin/c++` as the default with `cmake`. Note that 
 aliasing doesn't work since they're user-specific.
+
 ```bash
 readlink /usr/bin/c++       # should point to `/etc/alternatives/c++`
 readlink /etc/alternatives/c++      # should point to `/usr/bin/g++`
@@ -57,6 +59,7 @@ readlink /usr/bin/g++       # should be a real link (finally!)
 
 __PowerShell:__
 * WSL can consume ungodly amounts of RAM via VmmemWSL:
+
 ```pwsh
 # Observe running instances
 wsl -l -v
@@ -76,7 +79,10 @@ check_output("ls -l", shell=True)
 #
 #   E-Trade data
 #
-df = pd.read_csv('HOOLI.csv', index_col='Date')
+df = pd.read_excel('HOOLI.xlsx', index_col='Date')
+new_labels = list(map(lambda s : s[s.find(' ') + 1:].lower(), df.columns.tolist()))
+df = df.rename(columns = dict(zip(df.columns.tolist(), new_labels)))
+
 def summarize(t = df.shape[0]):
     print('Over the last ' + str(t) + ' days (of ' + str(df.shape[0]) + ')')
     print("Avg. return selling at high from open: " + str(df['High-Open'][-t:].mean()) + "\nAverage Spread: " + str(df['Spread'][-t:].mean()))
