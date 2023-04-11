@@ -19,9 +19,14 @@
     - [Very nice answer from Peter Cordes on why a for loop with different bounds takes the same time](https://stackoverflow.com/questions/50924929/simple-for-loop-benchmark-takes-the-same-time-with-any-loop-bound/50934895#50934895)
     - [Optimization tips due to Donald House of Clemson, pdf](https://people.cs.clemson.edu/~dhouse/courses/405/papers/optimize.pdf)
 * Memory:
-    - [Why raw pointers aren't set to nullptr when moved](https://stackoverflow.com/a/9453330)
-    - [The double-free problem for two shared pointers initialized from a raw pointer](https://stackoverflow.com/questions/41364700/when-should-we-use-stdenable-shared-from-this)
-    - [Why does the Standard not have a function returning page size?](https://stackoverflow.com/questions/3351940/detecting-the-memory-page-size#comment3480102_3351940)
+    - Language design questions:
+        * [Why does the Standard not have a function returning page size?](https://stackoverflow.com/questions/3351940/detecting-the-memory-page-size#comment3480102_3351940)
+        * [Why raw pointers aren't set to nullptr when moved](https://stackoverflow.com/a/9453330)
+    - Smart pointers:
+        * Why `std::make_shared` is preferred to a direct constructor call: [there's one allocation](https://stackoverflow.com/questions/52716437/make-shared-reference-counting-in-c)
+        * [The double-free problem for two shared pointers initialized from a raw pointer](https://stackoverflow.com/questions/41364700/when-should-we-use-stdenable-shared-from-this)
+        * [Shared pointer double-free on raw pointers](https://stackoverflow.com/questions/23673577/shared-pointer-double-deleting)
+        * [Design philosophy to avoid double-frees](https://stackoverflow.com/a/11711120)
 * The Standard:
     - [What does template rebinding do?](https://stackoverflow.com/a/14148870)
     - [Interesting discussion on why infinite loops are UB in C++, but not in C](https://news.ycombinator.com/item?id=25720760)
