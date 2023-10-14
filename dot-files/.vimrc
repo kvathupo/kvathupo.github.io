@@ -6,6 +6,9 @@
 " Requires: Vim 8
 " Repo: https://github.com/vim/vim.git
 "
+set encoding=utf-8
+scriptencoding utf-8
+set fileencoding=utf-8
 
 " -> Set tab to 2 spaces <-
 function! TabSmall()
@@ -47,3 +50,7 @@ let g:vim_markdown_folding_disabled = 1
 " -> leafgarland/typescript-vim <-
 " -> https://github.com/leafgarland/typescript-vim.git
 let g:typescript_indent_disable = 1
+
+" -> editorconfig/editorconfig-vim <-
+" -> https://github.com/editorconfig/editorconfig-vim.git <-
+" Set as a vim 8 startup package

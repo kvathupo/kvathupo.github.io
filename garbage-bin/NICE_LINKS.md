@@ -11,6 +11,8 @@
     - [What is ${PATH:+:${PATH}}?](https://unix.stackexchange.com/questions/267506/what-does-pathpath-mean)
 
 ## C++
+* Build:
+*   - [Difference between statically and dynamically linking](https://stackoverflow.com/questions/311882/what-do-statically-linked-and-dynamically-linked-mean)
 * CUDA:
     - [Blog post explaining CUDA streams](https://leimao.github.io/blog/CUDA-Stream/)
 * Optimization and benchmarking:
