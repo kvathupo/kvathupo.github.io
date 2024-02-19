@@ -57,6 +57,9 @@ readlink /etc/alternatives/c++      # should point to `/usr/bin/g++`
 readlink /usr/bin/g++       # should be a real link (finally!)
 ```
 
+__WSL:__
+* [Link](https://learn.microsoft.com/en-us/windows/wsl/wsl2-mount-disk) on how to expose partitions to WSL for mounting/unmounting.
+
 __PowerShell:__
 * WSL can consume ungodly amounts of RAM via VmmemWSL:
 
