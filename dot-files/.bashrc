@@ -117,8 +117,8 @@ if ! shopt -oq posix; then
 fi
 
 # >>> C++ environment variables >>>
-CC=/usr/bin/gcc
-CXX=/usr/bin/g++
+export CC=/usr/bin/gcc
+export CXX=/usr/bin/g++
 # <<< C++ environment variables<<<
 
 # >>> conda initialize >>>
