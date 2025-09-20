@@ -29,6 +29,8 @@ set tabstop=4
 set shiftwidth=4
 set softtabstop=4
 set expandtab
+" -> C++ highlighting support for modules <-
+autocmd BufNewFile,BufRead *.cpp,*.hpp,*.cxx,*.hxx,*.cc,*.hh,*.ixx setlocal filetype=cpp
 
 "
 "--------------------------------------
