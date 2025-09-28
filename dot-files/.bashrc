@@ -116,6 +116,11 @@ if ! shopt -oq posix; then
   fi
 fi
 
+# >>> library variables >>>
+# Point to where I compiled g++ 14
+export LD_LIBRARY_PATH="/usr/local/gcc-14.3.0/lib64:$LD_LIBRARY_PATH"
+# <<< library variables <<<
+
 # >>> C++ environment variables >>>
 export CC=gcc-14
 export CXX=g++-14
