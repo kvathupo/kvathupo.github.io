@@ -56,3 +56,4 @@ let g:typescript_indent_disable = 1
 " -> editorconfig/editorconfig-vim <-
 " -> https://github.com/editorconfig/editorconfig-vim.git <-
 " Set as a vim 8 startup package
+runtime! ftplugin/man.vim
