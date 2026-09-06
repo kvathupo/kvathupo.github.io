@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "defaultMode": "manual"
+  },
+  "model": "sonnet",
+  "effortLevel": "xhigh",
+  "modelSettings": {
+    "claude-sonnet-5": {
+      "effortLevel": "medium"
+    }
+  }
+}
